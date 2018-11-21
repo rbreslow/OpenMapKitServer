@@ -1,0 +1,36 @@
+version: '3'
+services:
+  openmapkitserver-nginx:
+    image: nginx:1.15.6
+    networks:
+      - openmapkitserver
+    ports:
+      - 80:80
+    volumes:
+      - /opt/openmapkitserver/nginx/openmapkitserver.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: on-failure
+    logging:
+      driver: syslog
+      options:
+        tag: openmapkitserver-nginx
+  openmapkitserver:
+    image: openmapkitserver
+    build:
+        context: .
+        dockerfile: Dockerfile
+    networks:
+      - openmapkitserver
+    ports:
+      - 3210:3210
+    volumes:
+      - /opt/openmapkitserver/data:/usr/local/src/data
+      - /opt/openmapkitserver/settings.js:/usr/local/src/settings.js:ro
+    entrypoint: /usr/local/bin/yarn
+    command: run server
+    restart: on-failure
+    logging:
+      driver: syslog
+      options:
+        tag: openmapkitserver
+networks:
+  openmapkitserver:
